@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-	audioSrc := flag.String("audio-src", "audiotestsrc", "GStreamer audio src")
 	videoSrc := flag.String("video-src", "videotestsrc", "GStreamer video src")
 	flag.Parse()
 
@@ -38,32 +37,12 @@ func main() {
 		fmt.Printf("Connection State has changed %s \n", connectionState.String())
 	})
 
-	// Create a audio track
-	audioTrack, err := webrtc.NewTrackLocalStaticSample(webrtc.RTPCodecCapability{MimeType: "audio/opus"}, "audio", "pion1")
-	if err != nil {
-		panic(err)
-	}
-	_, err = peerConnection.AddTrack(audioTrack)
-	if err != nil {
-		panic(err)
-	}
-
 	// Create a video track
-	firstVideoTrack, err := webrtc.NewTrackLocalStaticSample(webrtc.RTPCodecCapability{MimeType: "video/vp8"}, "video", "pion2")
+	firstVideoTrack, err := webrtc.NewTrackLocalStaticSample(webrtc.RTPCodecCapability{MimeType: webrtc.MimeTypeH264}, "video", "pion2")
 	if err != nil {
 		panic(err)
 	}
 	_, err = peerConnection.AddTrack(firstVideoTrack)
-	if err != nil {
-		panic(err)
-	}
-
-	// Create a second video track
-	secondVideoTrack, err := webrtc.NewTrackLocalStaticSample(webrtc.RTPCodecCapability{MimeType: "video/vp8"}, "video", "pion3")
-	if err != nil {
-		panic(err)
-	}
-	_, err = peerConnection.AddTrack(secondVideoTrack)
 	if err != nil {
 		panic(err)
 	}
@@ -99,8 +78,7 @@ func main() {
 	fmt.Println(signal.Encode(*peerConnection.LocalDescription()))
 
 	// Start pushing buffers on these tracks
-	gst.CreatePipeline("opus", []*webrtc.TrackLocalStaticSample{audioTrack}, *audioSrc).Start()
-	gst.CreatePipeline("vp8", []*webrtc.TrackLocalStaticSample{firstVideoTrack, secondVideoTrack}, *videoSrc).Start()
+	gst.CreatePipeline("h264", []*webrtc.TrackLocalStaticSample{firstVideoTrack}, *videoSrc).Start()
 
 	// Block forever
 	select {}
